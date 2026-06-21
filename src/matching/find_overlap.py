@@ -9,7 +9,17 @@ spark = SparkSession.builder.appName("find_overlap").getOrCreate()
 
 from pyspark.sql import functions as F
 
-def find_overlap(profile_skills, jobs_skills) -> dict:
+def find_overlap(profile_skills_df, jobs_skills_df):
+    """
+    Computes skill overlap between profile and job datasets.
+
+    Assumption:
+    - profile_df.skills is array<string>
+    - jobs_df.skills is array<string>
+    """
+
+    # -----------------------------
+    # 1., jobs_skills) -> dict:
     """
     Computes skill overlap between profile and job datasets.
 
@@ -21,7 +31,7 @@ def find_overlap(profile_skills, jobs_skills) -> dict:
     # -----------------------------
     # 1. Validate input (Spark-safe)
     # -----------------------------
-    if profile_skills is None or jobs_skills is None:
+    if profile_skills_df is None or jobs_skills_df is None:
         return {
             "status": "FAILED",
             "message": "Input DataFrames are None",
@@ -32,11 +42,11 @@ def find_overlap(profile_skills, jobs_skills) -> dict:
     # -----------------------------
     # 2. Explode arrays into rows
     # -----------------------------
-    profile_exploded = profile_skills.select(
+    profile_exploded = profile_skills_df.select(
         F.explode("skills").alias("skill")
     ).distinct()
 
-    jobs_exploded = jobs_skills.select(
+    jobs_exploded = jobs_skills_df.select(
         F.explode("skills").alias("skill")
     ).distinct()
 
